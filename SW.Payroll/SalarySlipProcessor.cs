@@ -67,7 +67,7 @@ namespace SW.Payroll
         public decimal CalculateTax(Employee employee)
         {
             var basicSalary = CalculateBasicSalary(employee);
-            if (basicSalary >= Constants.MediumSalaryTaxFactor)
+            if (basicSalary >= Constants.MediumSalaryThreshold)
                 return basicSalary * Constants.HighSalaryTaxFactor;
             else if (basicSalary >= Constants.LowSalaryThreshold)
                 return basicSalary * Constants.MediumSalaryTaxFactor;
@@ -97,8 +97,11 @@ namespace SW.Payroll
             if (employee is null)
                 throw new ArgumentNullException(nameof(employee));
 
+            if (!employee.HealthInsurancePackage.HasValue)
+                return 0m;
+
             switch (employee.HealthInsurancePackage.Value)
-            {
+            { 
                 case HealthInsurancePackage.Basic:
                     return Constants.BasicHealthCareAmount;
                 case HealthInsurancePackage.Fair:
@@ -133,16 +136,17 @@ namespace SW.Payroll
             var transportationAllowance = CalculateTransportationAllowece(employee);
             var dependantsAllowance = CalculateDependancyAllowance(employee);
             var spouseAllowance = CalculateSpouseAllowance(employee);
+            var basicSalary = CalculateBasicSalary(employee);
 
             var healthInduranceDeduction = CalculateHealthInsurance(employee);
             var pensionDeductions = CalculatePension(employee);
             var tax = CalculateTax(employee);
 
-            var basicSalary = CalculateBasicSalary(employee);
+           
 
             var netSalary =
                 (basicSalary + transportationAllowance + spouseAllowance + dependantsAllowance + dangerPay)
-                - (pensionDeductions + healthInduranceDeduction - tax);
+                - (pensionDeductions + healthInduranceDeduction + tax);
 
             return netSalary;
         }
